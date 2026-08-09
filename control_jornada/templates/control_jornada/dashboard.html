@@ -5,43 +5,78 @@
     <h2>Dashboard de Alertas y Salud Laboral</h2>
     <p>Monitoreo del estado de la jornada semanal del personal.</p>
 
+    <!-- FORMULARIO DE FILTROS (Cargo y Nivel de Riesgo) -->
+    <form method="GET" action="" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div>
+            <label for="cargo" style="font-weight: bold; margin-right: 5px;">Cargo:</label>
+            <select name="cargo" id="cargo" onchange="this.form.submit()" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="">Todos los cargos</option>
+                {% for c in cargos %}
+                    <option value="{{ c }}" {% if cargo_actual == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="riesgo" style="font-weight: bold; margin-right: 5px;">Nivel de riesgo:</label>
+            <select name="riesgo" id="riesgo" onchange="this.form.submit()" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="">Todos los niveles</option>
+                <option value="Normal" {% if riesgo_actual == 'Normal' %}selected{% endif %}>Normal</option>
+                <option value="Atención" {% if riesgo_actual == 'Atención' %}selected{% endif %}>Atención</option>
+                <option value="Crítico" {% if riesgo_actual == 'Crítico' %}selected{% endif %}>Crítico</option>
+            </select>
+        </div>
+
+        {% if cargo_actual or riesgo_actual %}
+            <div>
+                <a href="{% url 'dashboard_jefatura' %}" style="font-size: 13px; color: #dc3545; text-decoration: none; font-weight: bold;">[ Limpiar Filtros ]</a>
+            </div>
+        {% endif %}
+    </form>
+
     <!-- Tabla que lista a los mecánicos y sus horas -->
     <table class="tabla-datos">
         <thead>
             <tr>
                 <th>Mecánico</th>
                 <th>Cargo</th>
-                <th>Horas Acumuladas (Semana Act.)</th>
-                <th>Límite de Horas</th>
+                <th>Horas Acumuladas</th>
+                <th>Progreso de Jornada</th>
                 <th>Indicador de Riesgo</th>
                 <th>Estado Asignación</th>
                 <th>Acción</th>
             </tr>
         </thead>
         <tbody>
-            <!-- 1. ACTUALIZAMOS LAS VARIABLES: Ahora traemos id_emp y bloqueado desde views.py -->
-            {% for id_emp, mecanico, cargo, horas_semanales, max_horas, estado, bloqueado in datos %}
+            <!-- Iteramos sobre la variable 'empleados' que envía el views.py actualizados con los filtros -->
+            {% for id_emp, mecanico, cargo, horas_semanales, max_horas, estado, bloqueado in empleados %}
             <tr>
-                <td>{{ mecanico }}</td>
-                <td>{{ cargo }}</td>
-                
-                <!-- Barra de progreso simulada en texto -->
-                <td>{{ horas_semanales }}h / {{ max_horas }}h</td>
-                
-                <td>{{ max_horas }}h</td>
-
-                <!-- 2. SEMÁFORO DINÁMICO: Compara contra max_horas, ya no contra el 48 fijo -->
+                <!-- Nombre convertido en enlace hacia la vista del perfil individual -->
                 <td>
-                    {% if horas_semanales > max_horas %}
-                        <span class="etiqueta semaforo-rojo">🔴 Alerta Crítica</span>
-                    {% elif horas_semanales >= max_horas|add:"-2" %}
-                        <span class="etiqueta semaforo-amarillo">🟡 Atención</span>
+                    <a href="{% url 'perfil_mecanico' id_emp %}" style="color: #007bff; text-decoration: none; font-weight: bold;">
+                        {{ mecanico }}
+                    </a>
+                </td>
+                <td>{{ cargo }}</td>
+                <td><strong>{{ horas_semanales }}h</strong> / {{ max_horas }}h</td>
+                
+                <!-- Barra de Progreso Visual nativa de HTML -->
+                <td>
+                    <progress value="{{ horas_semanales }}" max="{{ max_horas }}" style="width: 100px; height: 14px; vertical-align: middle;"></progress>
+                </td>
+
+                <!-- Semáforo dinámico basado en el estado devuelto -->
+                <td>
+                    {% if estado == 'Crítico' %}
+                        <span class="etiqueta" style="background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; display: inline-block;">🔴 Crítico</span>
+                    {% elif estado == 'Atención' %}
+                        <span class="etiqueta" style="background-color: #ffc107; color: #333; padding: 6px 12px; border-radius: 20px; font-weight: bold; display: inline-block;">🟡 Atención</span>
                     {% else %}
-                        <span class="etiqueta semaforo-verde">🟢 Jornada Normal</span>
+                        <span class="etiqueta" style="background-color: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; display: inline-block;">🟢 Normal</span>
                     {% endif %}
                 </td>
 
-                <!-- 3. NUEVA COLUMNA: Muestra si el perfil está bloqueado en la base de datos -->
+                <!-- Muestra si el perfil está bloqueado en la base de datos -->
                 <td>
                     {% if bloqueado %}
                         <span style="color: #dc3545; font-weight: bold;">Bloqueado</span>
@@ -50,22 +85,19 @@
                     {% endif %}
                 </td>
 
-                <!-- 4. BOTÓN INTERACTIVO: Conectado a la ruta alternar_bloqueo -->
+                <!-- Botón interactivo conectado a la ruta alternar_bloqueo -->
                 <td>
-                    {% if horas_semanales > max_horas or bloqueado %}
-                        <a href="{% url 'alternar_bloqueo' id_emp %}" class="btn-bloqueo" 
-                           style="background-color: {% if bloqueado %}#28a745{% else %}#dc3545{% endif %}; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block;">
-                            {% if bloqueado %} Desbloquear {% else %}  Bloquear Asignación {% endif %}
-                        </a>
-                    {% else %}
-                        <span>Permitido</span>
-                    {% endif %}
+                    <a href="{% url 'alternar_bloqueo' id_emp %}" class="btn-bloqueo" 
+                       style="background-color: {% if bloqueado %}#28a745{% else %}#dc3545{% endif %}; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block;">
+                        {% if bloqueado %} Desbloquear {% else %} Bloquear Asignación {% endif %}
+                    </a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <!-- Cambiamos a colspan="7" porque ahora tenemos 7 columnas -->
-                <td colspan="7">No hay registros de horas esta semana.</td>
+                <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
+                    No se encontraron registros de mecánicos con los filtros seleccionados.
+                </td>
             </tr>
             {% endfor %}
         </tbody>

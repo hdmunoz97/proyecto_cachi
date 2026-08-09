@@ -1,0 +1,84 @@
+{% extends 'control_jornada/base.html' %}
+
+{% block contenido %}
+<section style="max-width: 700px; margin: 30px auto; font-family: Arial, sans-serif;">
+    <h2 style="text-align: center; margin-bottom: 25px; color: #333;">Perfil del mecánico</h2>
+
+    <!-- Tarjeta Principal Empleado -->
+    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 20px; background: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div>
+            <h3 style="margin: 0 0 5px 0; color: #222;">{{ empleado.nombre }} {{ empleado.apellido }}</h3>
+            <p style="margin: 0; color: #555; font-size: 14px;">Cédula: {{ empleado.documento }}</p>
+            <p style="margin: 5px 0 0 0; color: #555; font-size: 14px; font-weight: bold;">{{ empleado.cargo }}</p>
+        </div>
+        <div>
+            {% if empleado.bloqueado %}
+                <span style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold;">BLOQUEADO</span>
+            {% else %}
+                <span style="background: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold;">● ACTIVO</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Cajas de Resumen (Horas y Riesgo) -->
+    <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+        <div style="flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; background: #fff;">
+            <span style="font-size: 13px; color: #666; display: block; margin-bottom: 5px;">Horas acumuladas</span>
+            <strong style="font-size: 18px; color: #222;">{{ horas_acumuladas }} h</strong>
+        </div>
+        <div style="flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; background: #fff;">
+            <span style="font-size: 13px; color: #666; display: block; margin-bottom: 5px;">Límite semanal</span>
+            <strong style="font-size: 18px; color: #222;">{{ max_horas }} h</strong>
+        </div>
+        <div style="flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 15px; text-align: center; background: #fff;">
+            <span style="font-size: 13px; color: #666; display: block; margin-bottom: 5px;">Estado de riesgo</span>
+            <span style="font-size: 15px; font-weight: bold; 
+                {% if estado_riesgo == 'Crítico' %} color: red; 
+                {% elif estado_riesgo == 'Atención' %} color: #d39e00; 
+                {% else %} color: green; {% endif %}">
+                ● {{ estado_riesgo }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Progreso de la semana -->
+    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 20px; background: #fff; margin-bottom: 25px;">
+        <h4 style="margin: 0 0 10px 0; font-size: 15px; color: #333;">Horas de esta semana</h4>
+        <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: bold;">{{ horas_acumuladas }} / {{ max_horas }} horas</p>
+        <progress value="{{ horas_acumuladas }}" max="{{ max_horas }}" style="width: 100%; height: 16px;"></progress>
+    </div>
+
+    <!-- Historial de Jornadas -->
+    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 20px; background: #fff;">
+        <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #333;">Historial de jornadas</h4>
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead>
+                <tr style="border-bottom: 2px solid #ddd;">
+                    <th style="padding: 8px;">Fecha</th>
+                    <th style="padding: 8px;">Entrada</th>
+                    <th style="padding: 8px;">Salida</th>
+                    <th style="padding: 8px;">Horas trabajadas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fecha, entrada, salida, total in historial %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px;">{{ fecha|date:"d / m" }}</td>
+                    <td style="padding: 8px;">{{ entrada }}</td>
+                    <td style="padding: 8px;">{{ salida }}</td>
+                    <td style="padding: 8px; font-weight: bold;">{{ total }} h</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 15px; color: #777;">No hay registros de turnos para este empleado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="{% url 'dashboard_jefatura' %}" style="background: #333; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 14px;">← Volver al Dashboard</a>
+    </div>
+</section>
+{% endblock %}

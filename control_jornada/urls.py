@@ -19,4 +19,8 @@ urlpatterns = [
 
     #alerta popup
     path('verificar_empleado/<str:documento>/', views.verificar_empleado, name='verificar_empleado'),
+
+    #vista perfil mecanico
+    path('perfil/<int:id_empleado>/', views.perfil_mecanico, name='perfil_mecanico'),
+
 ]

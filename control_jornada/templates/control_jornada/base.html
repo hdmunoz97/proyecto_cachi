@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cachibí - Control de Tecnoestrés</title>
+    <!-- Importamos el archivo CSS de forma modular -->
+    <link rel="stylesheet" href="{% static 'control_jornada/css/estilos.css' %}">
+</head>
+<body>
+    <header class="header-principal">
+        <h1>Sistema Cachibí - MVP Control de Tecnoestrés</h1>
+        <nav>
+            <a href="{% url 'dashboard_jefatura' %}">Dashboard</a>
+            <a href="{% url 'registro_turno' %}">Registrar Turno</a>
+            <a href="{% url 'panel_rrhh' %}">Panel RRHH</a>
+        </nav>
+    </header>
+
+    <main class="contenedor-principal">
+        <!-- Aquí se inyectará el contenido específico de cada vista -->
+        {% block contenido %}
+        {% endblock %}
+    </main>
+</body>
+</html>

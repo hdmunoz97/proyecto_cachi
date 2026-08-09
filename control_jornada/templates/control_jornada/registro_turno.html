@@ -1,0 +1,166 @@
+{% extends 'control_jornada/base.html' %}
+
+{% block contenido %}
+<section class="modulo-registro">
+    <h2>Módulo de Registro de Turno</h2>
+    <p>Formulario para el registro de la jornada diaria del mecánico.</p>
+
+    <!-- Formulario que envía los datos a la vista por POST -->
+    <form action="{% url 'registro_turno' %}" method="POST" class="formulario-estandar">
+        {% csrf_token %}
+        
+        <!-- Bloque para mostrar errores si el documento no existe -->
+        {% if error %}
+            <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="grupo-formulario">
+            <label for="documento_empleado">Documento del Empleado:</label>
+            <!-- Entrada de texto directo (sin selector) para mayor agilidad -->
+            <input type="text" id="documento_empleado" name="documento_empleado" required placeholder="Ej: 123456789">
+        </div>
+
+        <div class="grupo-formulario">
+            <label for="hora_entrada">Hora de Entrada:</label>
+            <input type="time" id="hora_entrada" name="hora_entrada" required>
+        </div>
+
+        <div class="grupo-formulario">
+            <label for="hora_salida">Hora de Salida:</label>
+            <input type="time" id="hora_salida" name="hora_salida" required>
+        </div>
+
+        <div class="grupo-formulario">
+            <label for="horas_trabajadas">Horas Trabajadas (Calculado Automáticamente):</label>
+            <!-- Agregamos 'readonly' y un estilo gris para indicar que está bloqueado -->
+            <input type="number" id="horas_trabajadas" name="horas_trabajadas" step="0.01" required readonly style="background-color: #e9ecef; cursor: not-allowed; color: #495057;">
+        </div>
+
+        <button type="submit" class="btn-principal">Registrar Jornada</button>
+    </form>
+</section>
+
+<!-- Script para calcular las horas en tiempo real con JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputEntrada = document.getElementById('hora_entrada');
+        const inputSalida = document.getElementById('hora_salida');
+        const inputHoras = document.getElementById('horas_trabajadas');
+
+        function calcularHoras() {
+            const entrada = inputEntrada.value;
+            const salida = inputSalida.value;
+
+            // Solo calculamos si ambos campos de hora tienen información
+            if (entrada && salida) {
+                // Separamos las horas y los minutos de los strings (Ej: "14:30")
+                const [horaEnt, minEnt] = entrada.split(':').map(Number);
+                const [horaSal, minSal] = salida.split(':').map(Number);
+
+                // Convertimos todo a minutos para facilitar la resta aritmética
+                let minutosEntrada = (horaEnt * 60) + minEnt;
+                let minutosSalida = (horaSal * 60) + minSal;
+
+                // Si la salida es menor a la entrada, significa que el turno cruzó la medianoche
+                if (minutosSalida < minutosEntrada) {
+                    minutosSalida += 24 * 60; 
+                }
+
+                const diferenciaMinutos = minutosSalida - minutosEntrada;
+                
+                // Convertimos los minutos totales a formato decimal (Ej: 8 horas y 30 min = 8.50)
+                const horasDecimales = (diferenciaMinutos / 60).toFixed(2);
+                
+                // Asignamos el valor calculado al campo de solo lectura
+                inputHoras.value = horasDecimales;
+            } else {
+                // Si borran una hora, limpiamos el campo
+                inputHoras.value = '';
+            }
+        }
+
+        // Ejecutamos la función cada vez que el usuario cambie la hora de entrada o salida
+        inputEntrada.addEventListener('change', calcularHoras);
+        inputSalida.addEventListener('change', calcularHoras);
+    });
+</script>
+
+
+<!-- Script para calcular las horas en tiempo real con JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputEntrada = document.getElementById('hora_entrada');
+        const inputSalida = document.getElementById('hora_salida');
+        const inputHoras = document.getElementById('horas_trabajadas');
+        
+        // Capturamos el campo del documento y el botón de guardar
+        const inputDocumento = document.getElementById('documento_empleado');
+        const btnGuardar = document.querySelector('button[type="submit"]');
+
+        // 1. LÓGICA DEL POPUP DE VALIDACIÓN
+        // El evento 'blur' se dispara cuando el usuario termina de escribir y cambia de campo
+        inputDocumento.addEventListener('blur', function() {
+            const documento = this.value;
+            
+            if (documento) {
+                // Consultamos a la base de datos en tiempo real
+                fetch('/verificar_empleado/' + documento + '/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.existe && data.bloqueado) {
+                        // Lanzamos el popup nativo del navegador
+                        alert('Este empleado no se encuentra activo para registrar turno.');
+                        
+                        // Borramos lo que escribió y bloqueamos el botón para evitar errores
+                        inputDocumento.value = '';
+                        btnGuardar.disabled = true;
+                        btnGuardar.style.opacity = '0.5';
+                        btnGuardar.style.cursor = 'not-allowed';
+                    } else if (data.existe && !data.bloqueado) {
+                        // Si existe y está activo, nos aseguramos de habilitar el botón
+                        btnGuardar.disabled = false;
+                        btnGuardar.style.opacity = '1';
+                        btnGuardar.style.cursor = 'pointer';
+                    }
+                });
+            }
+        });
+
+        // 2. LÓGICA DE CÁLCULO DE HORAS (La que ya teníamos)
+        function calcularHoras() {
+            const entrada = inputEntrada.value;
+            const salida = inputSalida.value;
+
+            if (entrada && salida) {
+                const [horaEnt, minEnt] = entrada.split(':').map(Number);
+                const [horaSal, minSal] = salida.split(':').map(Number);
+
+                let minutosEntrada = (horaEnt * 60) + minEnt;
+                let minutosSalida = (horaSal * 60) + minSal;
+
+                if (minutosSalida < minutosEntrada) {
+                    minutosSalida += 24 * 60; 
+                }
+
+                const diferenciaMinutos = minutosSalida - minutosEntrada;
+                const horasDecimales = (diferenciaMinutos / 60).toFixed(2);
+                
+                inputHoras.value = horasDecimales;
+            } else {
+                inputHoras.value = '';
+            }
+        }
+
+        inputEntrada.addEventListener('change', calcularHoras);
+        inputSalida.addEventListener('change', calcularHoras);
+    });
+</script>
+
+
+
+
+
+
+{% endblock %}

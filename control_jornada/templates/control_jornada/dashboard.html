@@ -1,0 +1,74 @@
+{% extends 'control_jornada/base.html' %}
+
+{% block contenido %}
+<section class="dashboard-jefatura">
+    <h2>Dashboard de Alertas y Salud Laboral</h2>
+    <p>Monitoreo del estado de la jornada semanal del personal.</p>
+
+    <!-- Tabla que lista a los mecánicos y sus horas -->
+    <table class="tabla-datos">
+        <thead>
+            <tr>
+                <th>Mecánico</th>
+                <th>Cargo</th>
+                <th>Horas Acumuladas (Semana Act.)</th>
+                <th>Límite de Horas</th>
+                <th>Indicador de Riesgo</th>
+                <th>Estado Asignación</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 1. ACTUALIZAMOS LAS VARIABLES: Ahora traemos id_emp y bloqueado desde views.py -->
+            {% for id_emp, mecanico, cargo, horas_semanales, max_horas, estado, bloqueado in datos %}
+            <tr>
+                <td>{{ mecanico }}</td>
+                <td>{{ cargo }}</td>
+                
+                <!-- Barra de progreso simulada en texto -->
+                <td>{{ horas_semanales }}h / {{ max_horas }}h</td>
+                
+                <td>{{ max_horas }}h</td>
+
+                <!-- 2. SEMÁFORO DINÁMICO: Compara contra max_horas, ya no contra el 48 fijo -->
+                <td>
+                    {% if horas_semanales > max_horas %}
+                        <span class="etiqueta semaforo-rojo">🔴 Alerta Crítica</span>
+                    {% elif horas_semanales >= max_horas|add:"-2" %}
+                        <span class="etiqueta semaforo-amarillo">🟡 Atención</span>
+                    {% else %}
+                        <span class="etiqueta semaforo-verde">🟢 Jornada Normal</span>
+                    {% endif %}
+                </td>
+
+                <!-- 3. NUEVA COLUMNA: Muestra si el perfil está bloqueado en la base de datos -->
+                <td>
+                    {% if bloqueado %}
+                        <span style="color: #dc3545; font-weight: bold;">Bloqueado</span>
+                    {% else %}
+                        <span style="color: #28a745; font-weight: bold;">Activo</span>
+                    {% endif %}
+                </td>
+
+                <!-- 4. BOTÓN INTERACTIVO: Conectado a la ruta alternar_bloqueo -->
+                <td>
+                    {% if horas_semanales > max_horas or bloqueado %}
+                        <a href="{% url 'alternar_bloqueo' id_emp %}" class="btn-bloqueo" 
+                           style="background-color: {% if bloqueado %}#28a745{% else %}#dc3545{% endif %}; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block;">
+                            {% if bloqueado %} Desbloquear {% else %}  Bloquear Asignación {% endif %}
+                        </a>
+                    {% else %}
+                        <span>Permitido</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <!-- Cambiamos a colspan="7" porque ahora tenemos 7 columnas -->
+                <td colspan="7">No hay registros de horas esta semana.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

@@ -1,0 +1,253 @@
+/* =========================================
+   VARIABLES GLOBALES (Paleta de colores)
+========================================= */
+:root {
+    --color-primario: #e51e1e;
+    --color-fondo: #f4f7f6;
+    --color-texto: #333333;
+    
+    /* Colores del Semáforo de Riesgo (Requisito de profesora Ruth) */
+    --riesgo-verde: #28a745;   /* Jornada Normal (< 40h) */
+    --riesgo-amarillo: #ffc107; /* Atención (40h - 48h) */
+    --riesgo-rojo: #dc3545;     /* Alerta Crítica (> 48h) */
+}
+
+/* =========================================
+   ESTILOS GENERALES
+========================================= */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    margin: 0;
+    padding: 0;
+}
+
+.header-principal {
+    background-color: var(--color-primario);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-principal nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+    font-weight: bold;
+}
+
+.contenedor-principal {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* =========================================
+   ESTILOS DE FORMULARIO
+========================================= */
+.formulario-estandar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+}
+
+.grupo-formulario {
+    display: flex;
+    flex-direction: column;
+}
+
+.grupo-formulario label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.grupo-formulario input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-principal {
+    background-color: var(--color-primario);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-principal:hover {
+    background-color: #e51e1e;
+}
+
+/* =========================================
+   CLASES DINÁMICAS PARA EL SEMÁFORO (DASHBOARD)
+========================================= */
+.semaforo-verde {
+    background-color: var(--riesgo-verde);
+    color: white;
+}
+
+.semaforo-amarillo {
+    background-color: var(--riesgo-amarillo);
+    color: black;
+}
+
+.semaforo-rojo {
+    background-color: var(--riesgo-rojo);
+    color: white;
+}
+
+/* =========================================
+   ESTILOS DE TABLAS (DASHBOARD JEFATURA)
+========================================= */
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.tabla-datos th, .tabla-datos td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.tabla-datos th {
+    background-color: var(--color-primario);
+    color: white;
+    font-weight: bold;
+}
+
+.tabla-datos tr:hover {
+    background-color: #f1f5f9;
+}
+
+.etiqueta {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* =========================================
+   ESTILOS PANEL RRHH (GRID Y TARJETAS)
+========================================= */
+.contenedor-columnas {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas del mismo tamaño */
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.seccion-alertas, .seccion-horas-extra {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.seccion-alertas h3, .seccion-horas-extra h3 {
+    margin-top: 0;
+    color: var(--color-primario);
+    border-bottom: 2px solid var(--color-fondo);
+    padding-bottom: 10px;
+}
+
+/* Tarjetas de Alertas */
+.lista-tarjetas {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tarjeta-alerta {
+    background-color: #fff3cd; /* Fondo suave amarillo/rojo */
+    border-left: 5px solid var(--riesgo-rojo);
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.tarjeta-alerta p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+/* Lista de Horas Extra */
+.lista-horas {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.item-hora-extra {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-hora-extra:last-child {
+    border-bottom: none;
+}
+
+/* =========================================
+   BOTONES DE ACCIÓN ESPECÍFICOS
+========================================= */
+.btn-bloqueo {
+    background-color: var(--riesgo-rojo);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.btn-bloqueo:hover {
+    background-color: #bd2130;
+}
+
+.acciones-rrhh {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-aprobar {
+    background-color: var(--riesgo-verde);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-aprobar:hover {
+    background-color: #218838;
+}
+
+.btn-rechazar {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-rechazar:hover {
+    background-color: #5a6268;
+}

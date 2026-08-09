@@ -1,0 +1,57 @@
+{% extends 'control_jornada/base.html' %}
+
+{% block contenido %}
+<section class="panel-rrhh">
+    <h2>Panel de Notificaciones y Horas Extra (RRHH)</h2>
+    
+    <div class="contenedor-columnas">
+        
+        <!-- Columna 1: Tarjetas de Alertas de Tecnoestrés -->
+        <article class="seccion-alertas">
+            <h3>Alertas Críticas Recientes</h3>
+            <div class="lista-tarjetas">
+                {% for alerta in alertas %}
+                <!-- Añadimos 'position: relative' para que la X no se salga de la tarjeta -->
+                <div class="tarjeta-alerta" style="position: relative;">
+                    
+                    <!-- Botón interactivo de la 'X' para eliminar -->
+                    <a href="{% url 'eliminar_alerta' alerta.id_alerta %}" title="Eliminar alerta" style="position: absolute; top: 10px; right: 15px; text-decoration: none; font-weight: bold; color: #dc3545; font-size: 20px; cursor: pointer;">
+                        &times;
+                    </a>
+
+                    <p><strong>Fecha:</strong> {{ alerta.fecha_alerta|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Empleado:</strong> {{ alerta.id_empleado.nombre }} {{ alerta.id_empleado.apellido }}</p>
+                    <!-- Mensaje de sugerencia de descanso -->
+                    <p><strong>Mensaje:</strong> {{ alerta.mensaje }}</p>
+                    <p><strong>Acumulado:</strong> {{ alerta.horas_acumuladas }}h</p>
+                </div>
+                {% empty %}
+                <p>No hay alertas críticas sin atender.</p>
+                {% endfor %}
+            </div>
+        </article>
+
+        <!-- Columna 2: Gestión de Horas Extra -->
+        <article class="seccion-horas-extra">
+            <h3>Horas Extra por Aprobar</h3>
+            <ul class="lista-horas">
+                {% for hora in horas_pendientes %}
+                <li class="item-hora-extra">
+                    <p><strong>{{ hora.id_empleado.nombre }} {{ hora.id_empleado.apellido }}</strong> - {{ hora.fecha|date:"d/m/Y" }}</p>
+                    <p>Excedente: {{ hora.horas_extra }}h</p>
+                    
+                    <!-- Botones de acción para RRHH -->
+                    <div class="acciones-rrhh">
+                        <button class="btn-aprobar">Aprobar Pago</button>
+                        <button class="btn-rechazar">Rechazar</button>
+                    </div>
+                </li>
+                {% empty %}
+                <p>No hay horas extra pendientes de revisión.</p>
+                {% endfor %}
+            </ul>
+        </article>
+        
+    </div>
+</section>
+{% endblock %}
